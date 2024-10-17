@@ -16,19 +16,22 @@ from marshmallow_utils.fields import SanitizedHTML, TZDateTime
 
 
 class DynamicSanitizedHTML(SanitizedHTML):
-    """A subclass of SanitizedHTML that dynamically configures allowed HTML tags and attributes based on application settings."""
+    """A subclass of SanitizedHTML that dynamically configures allowed
+     HTML tags and attributes based on application settings."""
 
     def __init__(self, *args, **kwargs):
-        """Initializes DynamicSanitizedHTML with dynamic tag and attribute settings."""
+        """Initializes DynamicSanitizedHTML with dynamic tag and
+         attribute settings."""
         super().__init__(tags=None, attrs=None, *args, **kwargs)
 
     def _deserialize(self, value, attr, data, **kwargs):
-        """Deserialize value with dynamic HTML tags and attributes based on Flask app context or defaults."""
+        """Deserialize value with dynamic HTML tags and attributes based
+         on Flask app context or defaults."""
         self.tags = (
             current_app.config.get("ALLOWED_HTML_TAGS", [])
             + current_app.config["PAGES_ALLOWED_EXTRA_HTML_TAGS"]
         )
-        self.attrs = self.attrs = dict(
+        self.attrs = dict(
             **current_app.config.get("ALLOWED_HTML_ATTRS", {}),
             **current_app.config["PAGES_ALLOWED_EXTRA_HTML_ATTRS"]
         )
@@ -42,7 +45,8 @@ class PageSchema(Schema):
     id = fields.String()
     url = fields.String(metadata={"create_only": True})
     title = fields.String()
-    content = DynamicSanitizedHTML()
+    # content field was DynamicSanitizedHTML() but we don't want to filter tags
+    content = fields.String()
     description = fields.String()
     template_name = fields.String()
     created = TZDateTime(timezone=timezone.utc, format="iso", dump_only=True)
